@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
+
 
 class Registration extends Component {
 
@@ -12,36 +13,37 @@ class Registration extends Component {
         passwordError: false,
         confirmPasswordError: false
     }
-
+    //re
     stateChangeHandler = (e:any)=> {
+        let self = this;
         this.setState({[e.target.name]: e.target.value});
     }
 
-    submitRegistration = () => {
+    submitRegistration = async() => {
         if(!/^([a-zA-Z]*\s*[a-zA-Z]*)$/.test(this.state.fullName)){
-            this.setState({fullNameError: true});
+            await this.setState({fullNameError: true});
         }
         else{
-            this.setState({fullNameError: false});
+            await this.setState({fullNameError: false});
         }
         if(!/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         .test(this.state.email)){
-            this.setState({emailError: true});
+            await this.setState({emailError: true});
         }
         else{
-            this.setState({emailError: false});
+            await this.setState({emailError: false});
         }
         if(this.state.password.length<6){
-            this.setState({passwordError: true});
+            await this.setState({passwordError: true});
         }
         else{
-            this.setState({passwordError: false});
+            await this.setState({passwordError: false});
         }
         if(this.state.confirmPassword !== this.state.password){
-            this.setState({confirmPasswordError: true});
+            await this.setState({confirmPasswordError: true});
         }
         else{
-            this.setState({confirmPasswordError: false});
+            await this.setState({confirmPasswordError: false});
         }
         if(!this.state.passwordError && !this.state.fullNameError && !this.state.emailError && !this.state.confirmPasswordError){
             console.log(this.state);

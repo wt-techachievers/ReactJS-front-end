@@ -3,6 +3,7 @@ import './App.css';
 import {Route,BrowserRouter} from 'react-router-dom';
 import Registration from "./components/Registration";
 import LocationDetails from './components/ACService/LocationDetails';
+// import MyFancyComponent from './components/ACService/MapComponent';
 import BookingDetails from './components/ACService/BookingDetails';
 import NavLink from 'react-bootstrap/NavLink';
 

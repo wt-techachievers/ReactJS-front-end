@@ -1,52 +1,139 @@
 import React, { Component } from 'react';
-import GoogleMapReact from 'google-map-react';
-import PropTypes from 'prop-types';
-import ReactDOM from 'react-dom';
+// import ReactMapGL, { Marker } from 'react-map-gl';
+// import Geocoder from 'react-map-gl-geocoder';
+// import MapGL from 'react-map-gl'
+import { Card, Row, Col, Button, Form } from 'react-bootstrap';
 
-declare global {
-    interface Window {
-        google: any
+declare global{
+    interface Window{
+        mapboxgl:any;
+        MapboxGeocoder:any;
     }
 }
 
-class LocationDetails extends Component {
+class LocationDetails extends React.Component<any> {
     state = {
-        providers: [
-            {
-                "area":"Adajan"
-            }
-        ],
-        searchBox:new window.google.maps.places.SearchBox(ReactDOM.findDOMNode(this.refs.input))
-    }
-
-    onPlacesChanged = () => {
-        console.log(this.state.searchBox.getPlaces());
-        // if (this.props.onPlacesChanged) {
-        //   this.props.onPlacesChanged(this.state.searchBox.getPlaces());
+        // viewport: {
+        //     width: 1200,
+        //     height: 600,
+        //     latitude: 20.5937,
+        //     longitude: 78.9629,
+        //     zoom: 5
         // }
-        // console.log(this.state.searchBox.getPlaces());
+        searchResult:{},
+        address: ""
     }
+    
+    mapRef = React.createRef()
+    
     componentDidMount() {
-        let searchBox = new window.google.maps.places.SearchBox(ReactDOM.findDOMNode(this.refs.input));
-        searchBox.addListener('places_changed', this.onPlacesChanged);
-        this.setState({searchBox:searchBox});
-      }
-      componentWillUnmount() {
-        // https://developers.google.com/maps/documentation/javascript/events#removing
-        window.google.maps.event.clearInstanceListeners(this.state.searchBox);
-      }
+        let self = this;
+        window.mapboxgl.accessToken = 'pk.eyJ1IjoiY2hpbnRhbnNvbmkxIiwiYSI6ImNqdmMxOHh1MzFkeWk0NG15bWJlbDYwN2sifQ.MT1hxtqXFw4QAXZ8MyfzCQ';
+        var map = new window.mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v9',
+        center: [78.9629, 20.5937],
+        zoom: 4
+        });
+        
+        var geocoder = new window.MapboxGeocoder({
+        accessToken: window.mapboxgl.accessToken,
+        types: 'poi',
+        // see https://docs.mapbox.com/api/search/#geocoding-response-object for information about the schema of each response feature
+        render: function(item:any) {
+        // extract the item's maki icon or use a default
+        var maki = item.properties.maki || 'marker';
+        return "<div class='geocoder-dropdown-item'><img class='geocoder-dropdown-icon' src='https://unpkg.com/@mapbox/maki@6.1.0/icons/" + maki + "-15.svg'><span class='geocoder-dropdown-text'>" + item.text + "</span></div>";
+        },
+        mapboxgl: window.mapboxgl
+        });
+        map.addControl(geocoder);
 
+
+        geocoder.on('result', function(e:any) {
+            self.setState({searchResult:e.result});
+        });
+    }
+
+    textHandler=(e:any)=>{
+        this.setState({[e.target.name]: e.target.value} as any);
+    }
+
+    submit =()=>{
+        console.log(this.state);
+        //this.props.history.push("/acservice/location");
+    }
+
+    previous =()=>{
+        console.log(this.state);
+        this.props.history.push("/acservice");
+    }
+    
     render() {
         return (
             <div>
-               <div style={{ height: '100vh', width: '100%' }}>
-                    <GoogleMapReact
-                        bootstrapURLKeys={{ key: "AIzaSyBzut5kO7frGAfdrNOlP91UEizpSz8IVVk"}}
-                        defaultCenter={ { lat: 40.7446790, lng: -73.9485420 } }
-                        defaultZoom={ 11 }>
-                    </GoogleMapReact>
-                </div>
-                <input ref="input" type="text"/>;
+                {/* <MapGL
+                    ref={this.mapRef}
+                    {...this.state.viewport}
+                    onViewportChange={(viewport) => this.setState({viewport})}
+                    mapboxApiAccessToken={"pk.eyJ1IjoiY2hpbnRhbnNvbmkxIiwiYSI6ImNqdmMxOHh1MzFkeWk0NG15bWJlbDYwN2sifQ.MT1hxtqXFw4QAXZ8MyfzCQ"}
+                >
+                    <Marker latitude={20.5937} longitude={78.9629} offsetLeft={-20} offsetTop={-10} >
+                    <img style={{width:"50px",height:"50px"}} src="http://www.iconninja.com/files/827/534/352/map-marker-icon.png"></img>
+                    </Marker>
+                    <Geocoder
+                        mapRef={this.mapRef}
+                        // onViewportChange={this.handleGeocoderViewportChange}
+                        mapboxApiAccessToken={"pk.eyJ1IjoiY2hpbnRhbnNvbmkxIiwiYSI6ImNqdmMxOHh1MzFkeWk0NG15bWJlbDYwN2sifQ.MT1hxtqXFw4QAXZ8MyfzCQ"}
+                    />
+                </MapGL> */}
+                <Card >
+                    <Card.Header>
+                        <h4>Your Location</h4>
+                    </Card.Header>
+                    <Card.Body>
+                        <Card>
+                            <Card.Body style={{width:"600px",height:"300px"}}>
+                                <div id='map'></div>
+                            </Card.Body>
+                        </Card>
+                        <Card>
+                            <Card.Header className="text-primary">
+                                <h3>Address</h3>
+                            </Card.Header>
+                            <Card.Body>
+                                <Form.Control 
+                                name="address"
+                                onChange = {this.textHandler}
+                                as="textarea" rows="3"
+                                />        
+                            </Card.Body>
+                        </Card>
+                        <Row>
+                            <Col lg="2">
+                                <Form.Label>Price</Form.Label>
+                            </Col>
+                            <Col lg="2">
+                                <Form.Label >60.00</Form.Label>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col lg="2">
+                                <Button 
+                                variant="dark"
+                                size="lg"
+                                onClick={this.previous}>Back</Button>
+                            </Col>
+                            <Col lg="2">
+                                <Button 
+                                variant="primary"
+                                size="lg"
+                                onClick={this.submit}>Next</Button>
+                            </Col>
+                        </Row>
+                        
+                    </Card.Body>
+                </Card>
             </div>
         )
     }
@@ -54,46 +141,5 @@ class LocationDetails extends Component {
 
 export default LocationDetails;
 
-// import {Map, InfoWindow, Marker, GoogleApiWrapper} from 'google-maps-react';
 
-// interface IProps {
-//     google:any
-// }
-// const style = {
-//     width: '100%',
-//     height: '100%'
-// }
-// export class LocationDetails extends React.Component<IProps> {
-//     constructor(props:any){
-//         super(props);
-//     }
 
-//     onMarkerClick = (e:any) =>{
-//         console.log(e);
-//     }
-
-//     onInfoWindowClose = (e:any) =>{
-//         console.log(e);
-//     }
-
-//     render() {
-//     return (
-//         <div style={{marginLeft:".5%", marginTop:".1%", height: '50px', width: '100px' }}>
-//             <Map google={this.props.google} zoom={14}>
-//             </Map>
-//             {/* <Marker onClick={this.onMarkerClick}
-//                     name={'Current location'} />
-
-//             <InfoWindow onClose={this.onInfoWindowClose}>
-//                 <div>
-//                 <h1>{"this.state.selectedPlace.name"}</h1>
-//                 </div>
-//             </InfoWindow> */}
-//         </div>
-//     );
-//   }
-// }
-
-// export default GoogleApiWrapper({
-//   apiKey: ("AIzaSyBzut5kO7frGAfdrNOlP91UEizpSz8IVVk")
-// })(LocationDetails);

@@ -25,20 +25,12 @@ class BookingDetails extends React.Component<any,IACServiceState> {
         startDate: new Date()
     }
 
-    radioHandler = (e:React.FormEvent<HTMLInputElement>) => {
-        this.setState({[e.currentTarget.name]: e.currentTarget.value} as any);
+    changeHandler = (e:any) => {
+        this.setState({[e.target.name]: e.target.value} as any);
     }
 
     handleDate = (e:any) =>{
         this.setState({startDate: e});
-    }
-
-    handleTime = (e:any) =>{
-        this.setState({startTime:e.currentTarget.value});
-    }
-
-    textHandler = (e:any) =>{
-        this.setState({iabTypeNoACUnits:e.currentTarget.value});
     }
 
     checkBoxHandler = (e:any,key:keyof IACServiceState) =>{
@@ -71,7 +63,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 name={'serviceType'}
                                 label={`AC Cleaning`}
                                 value = {`AC Cleaning`}
-                                onChange={this.radioHandler}>
+                                onChange={this.changeHandler}>
                             </Form.Check>
                             <Form.Check 
                                 type={"radio"}
@@ -79,7 +71,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 id={`acInstallationRadio`}
                                 label={`AC Installation`}
                                 value={`AC Installation`}
-                                onChange={this.radioHandler}>
+                                onChange={this.changeHandler}>
                             </Form.Check>
                             <Form.Check 
                                 type={"radio"}
@@ -87,7 +79,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 id={`acRepairRadio`}
                                 label={`AC Repairing`}
                                 value={`AC Repairing`}
-                                onChange={this.radioHandler}>
+                                onChange={this.changeHandler}>
                             </Form.Check>
                         </Card.Body>
                     </Card>
@@ -129,7 +121,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 type="text"
                                 name="iabTypeNoACUnits"
                                 value={this.state.iabTypeNoACUnits}
-                                onChange={this.textHandler}
+                                onChange={this.changeHandler}
                             />
                         </Form.Group>
                         <Form.Group>
@@ -228,7 +220,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                         name={'buildingType'}
                                         label={`House`}
                                         value={`House`}
-                                        onChange= {this.radioHandler}>
+                                        onChange= {this.changeHandler}>
                                     </Form.Check>
                                 </Col>
                                 <Col>
@@ -238,7 +230,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                         name={'buildingType'}
                                         label={`Apartment (+Rp. 25,000)`}
                                         value={`Apartment (+Rp. 25,000)`}
-                                        onChange= {this.radioHandler}>
+                                        onChange= {this.changeHandler}>
                                     </Form.Check>
                                 </Col>
                             </Row>
@@ -250,7 +242,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                         name={'buildingType'}
                                         label={`Home Office (+Rp. 25,000)`}
                                         value={`Home Office (+Rp. 25,000)`}
-                                        onChange= {this.radioHandler}>
+                                        onChange= {this.changeHandler}>
                                     </Form.Check>
                                 </Col>
                                 <Col>
@@ -260,7 +252,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                         name={'buildingType'}
                                         label={`Office Building (+Rp. 25,000)`}
                                         value={`Office Building (+Rp. 25,000)`}
-                                        onChange= {this.radioHandler}>
+                                        onChange= {this.changeHandler}>
                                     </Form.Check>
                                 </Col>
                             </Row>
@@ -277,6 +269,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <DatePicker
                                         selected={this.state.startDate}
                                         onChange={this.handleDate}
+                                        name="startDate"
                                         peekNextMonth
                                         showMonthDropdown
                                         showYearDropdown
@@ -288,7 +281,8 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                             <Form.Group>
                                 <Form.Label>Time</Form.Label>
                                 <Form.Control as="select"
-                                    onChange = {this.handleTime}>
+                                    name="startTime"
+                                    onChange = {this.changeHandler}>
                                     <option>8:00</option>
                                     <option>9:00</option>
                                     <option>10:00</option>

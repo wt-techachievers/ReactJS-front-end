@@ -1,7 +1,20 @@
 import React, {Component} from 'react';
+import { addUser } from 'action/auth';
+import { connect } from 'react-redux';
+import { IAppState } from 'store';
 
+export interface IRegistrationState{
+    fullName: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+    fullNameError: boolean,
+    emailError: boolean,
+    passwordError: boolean,
+    confirmPasswordError: boolean
+}
 
-class Registration extends Component {
+class Registration extends React.Component<any,IRegistrationState> {
 
     state={
         fullName: "",
@@ -16,7 +29,7 @@ class Registration extends Component {
     //re
     stateChangeHandler = (e:any)=> {
         let self = this;
-        this.setState({[e.target.name]: e.target.value});
+        this.setState({[e.target.name]: e.target.value} as any);
     }
 
     submitRegistration = async() => {
@@ -46,7 +59,9 @@ class Registration extends Component {
             await this.setState({confirmPasswordError: false});
         }
         if(!this.state.passwordError && !this.state.fullNameError && !this.state.emailError && !this.state.confirmPasswordError){
-            console.log(this.state);
+            console.log(this.props);
+            this.props.addUser(this.state);
+            this.props.history.push('/');
         }
     }
 
@@ -117,4 +132,8 @@ class Registration extends Component {
     }
 }
 
-export default Registration;
+const mapStateToProps= (state:IAppState)=>({
+    Users: state.authState
+});
+
+export default connect(mapStateToProps,{addUser})(Registration);

@@ -5,9 +5,21 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "react-datepicker/dist/react-datepicker.css";
-import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css'
+import 'react-map-gl-geocoder/dist/mapbox-gl-geocoder.css';
+import { Store } from 'redux';
+import store, { IAppState } from 'store';
+import { Provider } from 'react-redux';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+
+const Root = (props:any) => {
+    return (
+      <Provider store={store}>
+        <App />
+      </Provider>
+    );
+};
+
+ReactDOM.render(<Root />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

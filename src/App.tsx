@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import {Route,BrowserRouter} from 'react-router-dom';
+import {Route,BrowserRouter, Link} from 'react-router-dom';
 import Registration from "./components/Registration";
 import LocationDetails from './components/ACService/LocationDetails';
 // import MyFancyComponent from './components/ACService/MapComponent';
@@ -11,9 +11,11 @@ const App: React.FC = () => {
   return (
     <div >
       {/* <Registration/> */}
-      <a href="/acservice">Click here to move forward</a>
+      
       {/* <BookingDetails/> */}
       <BrowserRouter>
+        <Link to="/acservice">Click here to move forward</Link>
+        <Route exact path="/registration" component={Registration}></Route>
         <Route exact path="/acservice" component={BookingDetails}></Route>
         <Route path="/acservice/location" component={LocationDetails}></Route>
       </BrowserRouter>

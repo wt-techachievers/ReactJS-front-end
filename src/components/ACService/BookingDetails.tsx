@@ -1,28 +1,54 @@
 import React, { Component, FormEvent } from 'react';
 import { Card, Button, Form, Row, Col } from 'react-bootstrap';
 import DatePicker from "react-datepicker";
+import { connect } from 'react-redux';
+import { IAppState } from 'store';
+import { bookAcService } from 'action/acService';
+import PropTypes from 'prop-types';
 
-interface IACServiceState{
+export interface IACServiceState{
+    s_no: number,
     serviceType: string,
     iabTypeProblem:string[],
     iabTypeNoACUnits: string,
     iabTypeBrand: string[],
     buildingType: string,
-    startTime: Date,
+    startTime: string,
     startDate: Date,
+    location: object,
+    additionalAdd: string,
+    serviceTypeError: boolean,
+    iabTypeProblemError:boolean,
+    iabTypeNoACUnitsError: boolean,
+    iabTypeBrandError: boolean,
+    buildingTypeError: boolean,
+    startTimeError: boolean,
+    locationError: boolean,
+    additionalAddError: boolean,
     //[key: string]: any    
 }
 
 class BookingDetails extends React.Component<any,IACServiceState> {
 
     state={
+        s_no: this.props.acBookings.Bookings.length,
         serviceType: "",
         iabTypeProblem:[],
         iabTypeNoACUnits: "0",
         iabTypeBrand: [],
         buildingType: "",
-        startTime: new Date(),
-        startDate: new Date()
+        startTime: "",
+        startDate: new Date(),
+        location: {},
+        additionalAdd: "",
+        serviceTypeError: false,
+        iabTypeProblemError:false,
+        iabTypeNoACUnitsError: false,
+        iabTypeBrandError: false,
+        buildingTypeError: false,
+        startTimeError: false,
+        locationError: false,
+        additionalAddError: false,
     }
 
     changeHandler = (e:any) => {
@@ -35,13 +61,53 @@ class BookingDetails extends React.Component<any,IACServiceState> {
 
     checkBoxHandler = (e:any,key:keyof IACServiceState) =>{
         let newarray = this.state[key] as string[];
-        newarray.push(e.target.value);
-        this.setState({[key]: newarray} as any);
+        if(!e.target.checked){
+            newarray.splice(newarray.indexOf(e.target.value),1);
+            this.setState({[key]: newarray} as any); 
+        }
+        else{
+            newarray.push(e.target.value);
+            this.setState({[key]: newarray} as any);
+        }
     }
 
-    submit =()=>{
-        console.log(this.state);
-        this.props.history.push("/acservice/location");
+    submit = async()=>{
+        if(this.state.serviceType === ""){
+            await this.setState({serviceTypeError: true});
+        }
+        else{
+            await this.setState({serviceTypeError: false});
+        }
+        if(this.state.iabTypeProblem.length <= 0){
+            await this.setState({iabTypeProblemError: true});
+        }else{
+            await this.setState({iabTypeProblemError: false});
+        }
+        if(+this.state.iabTypeNoACUnits <= 0){
+            await this.setState({iabTypeNoACUnitsError: true});
+        }else{
+            await this.setState({iabTypeNoACUnitsError: false});
+        }
+        if(this.state.iabTypeBrand.length <= 0){
+            await this.setState({iabTypeBrandError: true});
+        }else{
+            await this.setState({iabTypeBrandError: false});
+        }
+        if(this.state.buildingType === ""){
+            await this.setState({buildingTypeError: true});
+        }else{
+            await this.setState({buildingTypeError: false});
+        }
+        if(this.state.startTime === ""){
+            await this.setState({startTimeError: true});
+        }else{
+            await this.setState({startTimeError: false});
+        }
+        if(!this.state.buildingTypeError && !this.state.iabTypeBrandError && !this.state.iabTypeNoACUnitsError && !this.state.iabTypeProblemError && !this.state.serviceTypeError && !this.state.startTimeError){
+            this.props.bookAcService(this.state);
+            console.log(this.props);
+            // this.props.history.push("/acservice/location/"+this.state.s_no);
+        }
     }
 
     render() {
@@ -81,6 +147,12 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 value={`AC Repairing`}
                                 onChange={this.changeHandler}>
                             </Form.Check>
+                            {
+                                this.state.serviceTypeError && 
+                                <Form.Control.Feedback style={{display:"block"}} type="invalid">
+                                    Please choose atleast one.
+                                </Form.Control.Feedback>
+                            }
                         </Card.Body>
                     </Card>
                     <Card>
@@ -114,6 +186,12 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 value={`Others`}
                                 onChange={(e:any)=>this.checkBoxHandler(e,"iabTypeProblem")}>
                             </Form.Check>
+                            {
+                                this.state.iabTypeProblemError && 
+                                <Form.Control.Feedback style={{display:"block"}} type="invalid">
+                                    Please choose atleast one.
+                                </Form.Control.Feedback>
+                            }
                         </Form.Group>
                         <Form.Group>
                             <Form.Label><h5>No. Of AC Units</h5></Form.Label>
@@ -123,6 +201,12 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 value={this.state.iabTypeNoACUnits}
                                 onChange={this.changeHandler}
                             />
+                            {
+                                this.state.iabTypeNoACUnitsError && 
+                                <Form.Control.Feedback style={{display:"block"}} type="invalid">
+                                    Please write no. of ac units.
+                                </Form.Control.Feedback>
+                            }
                         </Form.Group>
                         <Form.Group>
                             <Form.Label><h5>Your AC Brand</h5></Form.Label>
@@ -204,6 +288,12 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     </Col>
                                 </Row>    
                             </div>
+                            {
+                                this.state.iabTypeBrandError && 
+                                <Form.Control.Feedback style={{display:"block"}} type="invalid">
+                                    Please choose atleast one.
+                                </Form.Control.Feedback>
+                            }
                         </Form.Group>
                         </Card.Body>
                     </Card>
@@ -256,6 +346,12 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     </Form.Check>
                                 </Col>
                             </Row>
+                            {
+                                this.state.buildingTypeError && 
+                                <Form.Control.Feedback style={{display:"block"}} type="invalid">
+                                    Please choose atleast one.
+                                </Form.Control.Feedback>
+                            }
                         </Card.Body>
                     </Card>
                     <Card>
@@ -267,6 +363,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 <Form.Label>Date</Form.Label>
                                 <div>
                                     <DatePicker
+                                        // customInput={<ExampleCustomInput />}
                                         selected={this.state.startDate}
                                         onChange={this.handleDate}
                                         name="startDate"
@@ -283,6 +380,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 <Form.Control as="select"
                                     name="startTime"
                                     onChange = {this.changeHandler}>
+                                    <option value="">---Select---</option>
                                     <option>8:00</option>
                                     <option>9:00</option>
                                     <option>10:00</option>
@@ -296,6 +394,12 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <option>18:00</option>
                                     <option>19:00</option>
                                 </Form.Control>
+                                {
+                                    this.state.startTimeError && 
+                                    <Form.Control.Feedback style={{display:"block"}} type="invalid">
+                                        Please choose atleast one time.
+                                    </Form.Control.Feedback>
+                                }
                             </Form.Group>
                         </Card.Body>
                     </Card>
@@ -318,4 +422,28 @@ class BookingDetails extends React.Component<any,IACServiceState> {
     }
 }
 
-export default BookingDetails;
+const mapStateToProps = (state:IAppState)=>({
+        acBookings: state.serviceState
+});
+
+export default connect(mapStateToProps,{bookAcService})(BookingDetails);
+
+
+// class CustomInputDate extends React.Component {
+    
+//     render () {
+//       return (
+//         <button
+//           className="example-custom-input"
+//           onClick={this.props.onClick}>
+//           {this.props.value}
+//         </button>
+//       )
+//     }
+//   }
+  
+//   CustomInputDate.propTypes = {
+//     onClick: PropTypes.func,
+//     value: PropTypes.string
+//   };
+  

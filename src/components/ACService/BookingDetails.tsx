@@ -106,7 +106,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
         if(!this.state.buildingTypeError && !this.state.iabTypeBrandError && !this.state.iabTypeNoACUnitsError && !this.state.iabTypeProblemError && !this.state.serviceTypeError && !this.state.startTimeError){
             this.props.bookAcService(this.state);
             console.log(this.props);
-            // this.props.history.push("/acservice/location/"+this.state.s_no);
+            this.props.history.push("/acservice/location/"+this.state.s_no);
         }
     }
 

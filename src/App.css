@@ -31,3 +31,15 @@
     transform: rotate(360deg);
   }
 }
+.text-align-center{
+  text-align: center;
+}
+
+.text-align-center > tbody > tr > td{
+  vertical-align: middle;
+  text-align: center;
+}
+
+.stchecked {
+  color: orange;
+}

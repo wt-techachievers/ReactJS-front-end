@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { IAppState } from 'store';
 
 export interface IRegistrationState{
+    u_id: number
     fullName: string,
     email: string,
     password: string,
@@ -17,6 +18,7 @@ export interface IRegistrationState{
 class Registration extends React.Component<any,IRegistrationState> {
 
     state={
+        u_id: this.props.Users.Users.length,
         fullName: "",
         email: "",
         password: "",
@@ -61,7 +63,7 @@ class Registration extends React.Component<any,IRegistrationState> {
         if(!this.state.passwordError && !this.state.fullNameError && !this.state.emailError && !this.state.confirmPasswordError){
             console.log(this.props);
             this.props.addUser(this.state);
-            this.props.history.push('/');
+            this.props.history.push('/acservice/'+this.state.u_id);
         }
     }
 

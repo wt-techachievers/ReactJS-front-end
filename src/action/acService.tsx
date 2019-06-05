@@ -1,8 +1,8 @@
-import {BOOK_AC_SERVICE, SET_LOCATION } from './types';
+import {BOOK_AC_SERVICE, UPDATE_BOOK_AC_SERVICE } from './types';
 import { IACServiceState } from 'components/ACService/BookingDetails';
 
 export interface IAction{
-    type: typeof BOOK_AC_SERVICE | typeof SET_LOCATION;
+    type: typeof BOOK_AC_SERVICE | typeof UPDATE_BOOK_AC_SERVICE;
     payload: IACServiceState | IACServiceState[];
 }
 
@@ -11,5 +11,5 @@ export function bookAcService(booking:IACServiceState){
 }
 
 export function updateLocationAcService(booking:IACServiceState[]){
-    return {type: SET_LOCATION, payload: booking};
+    return {type: UPDATE_BOOK_AC_SERVICE, payload: booking};
 }

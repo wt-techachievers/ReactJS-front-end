@@ -7,24 +7,26 @@ import { bookAcService } from 'action/acService';
 import PropTypes from 'prop-types';
 
 export interface IACServiceState{
-    s_no: number,
-    serviceType: string,
-    iabTypeProblem:string[],
-    iabTypeNoACUnits: string,
-    iabTypeBrand: string[],
-    buildingType: string,
-    startTime: string,
-    startDate: Date,
-    location: object,
-    additionalAdd: string,
-    serviceTypeError: boolean,
-    iabTypeProblemError:boolean,
-    iabTypeNoACUnitsError: boolean,
-    iabTypeBrandError: boolean,
-    buildingTypeError: boolean,
-    startTimeError: boolean,
-    locationError: boolean,
-    additionalAddError: boolean,
+    s_no: number;
+    user_id: number;
+    serviceType: string;
+    iabTypeProblem:string[];
+    iabTypeNoACUnits: string;
+    iabTypeBrand: string[];
+    buildingType: string;
+    startTime: string;
+    startDate: Date;
+    location: any;
+    bookingAreas: any[];
+    additionalAdd: string;
+    serviceTypeError: boolean;
+    iabTypeProblemError:boolean;
+    iabTypeNoACUnitsError: boolean;
+    iabTypeBrandError: boolean;
+    buildingTypeError: boolean;
+    startTimeError: boolean;
+    locationError: boolean;
+    additionalAddError: boolean;
     //[key: string]: any    
 }
 
@@ -32,15 +34,17 @@ class BookingDetails extends React.Component<any,IACServiceState> {
 
     state={
         s_no: this.props.acBookings.Bookings.length,
+        user_id:+this.props.location.pathname.split("/").slice(-1)[0],
         serviceType: "",
         iabTypeProblem:[],
-        iabTypeNoACUnits: "0",
+        iabTypeNoACUnits: "1",
         iabTypeBrand: [],
         buildingType: "",
         startTime: "",
         startDate: new Date(),
         location: {},
         additionalAdd: "",
+        bookingAreas: [],
         serviceTypeError: false,
         iabTypeProblemError:false,
         iabTypeNoACUnitsError: false,
@@ -52,7 +56,9 @@ class BookingDetails extends React.Component<any,IACServiceState> {
     }
 
     changeHandler = (e:any) => {
-        this.setState({[e.target.name]: e.target.value} as any);
+        if(!(e.target.name === "iabTypeNoACUnits" && (e.target.value != "" && +e.target.value <=0))){
+            this.setState({[e.target.name]: e.target.value} as any);
+        }
     }
 
     handleDate = (e:any) =>{
@@ -360,40 +366,49 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                         </Card.Header>
                         <Card.Body>
                             <Form.Group>
-                                <Form.Label>Date</Form.Label>
-                                <div>
-                                    <DatePicker
-                                        // customInput={<ExampleCustomInput />}
-                                        selected={this.state.startDate}
-                                        onChange={this.handleDate}
-                                        name="startDate"
-                                        peekNextMonth
-                                        showMonthDropdown
-                                        showYearDropdown
-                                        dropdownMode="select"
-                                    />
-                                </div>
-                                
+                                <Row>
+                                    <Col sm={1}>
+                                        <Form.Label>Date -</Form.Label>
+                                    </Col>
+                                    <Col sm={1}>
+                                        <DatePicker
+                                            customInput={<ExampleCustomInput onClick={this.handleDate} value={this.state.startDate}/>}
+                                            selected={this.state.startDate}
+                                            onChange={this.handleDate}
+                                            name="startDate"
+                                            peekNextMonth
+                                            showMonthDropdown
+                                            showYearDropdown
+                                            dropdownMode="select"
+                                        />
+                                    </Col>
+                                </Row>
                             </Form.Group>
                             <Form.Group>
-                                <Form.Label>Time</Form.Label>
-                                <Form.Control as="select"
-                                    name="startTime"
-                                    onChange = {this.changeHandler}>
-                                    <option value="">---Select---</option>
-                                    <option>8:00</option>
-                                    <option>9:00</option>
-                                    <option>10:00</option>
-                                    <option>11:00</option>
-                                    <option>12:00</option>
-                                    <option>13:00</option>
-                                    <option>14:00</option>
-                                    <option>15:00</option>
-                                    <option>16:00</option>
-                                    <option>17:00</option>
-                                    <option>18:00</option>
-                                    <option>19:00</option>
-                                </Form.Control>
+                                <Row>
+                                    <Col sm={1}>
+                                        <Form.Label>Time</Form.Label>
+                                    </Col>
+                                    <Col sm={2}>
+                                        <Form.Control as="select"
+                                            name="startTime"
+                                            onChange = {this.changeHandler}>
+                                            <option value="">---Select---</option>
+                                            <option>8:00</option>
+                                            <option>9:00</option>
+                                            <option>10:00</option>
+                                            <option>11:00</option>
+                                            <option>12:00</option>
+                                            <option>13:00</option>
+                                            <option>14:00</option>
+                                            <option>15:00</option>
+                                            <option>16:00</option>
+                                            <option>17:00</option>
+                                            <option>18:00</option>
+                                            <option>19:00</option>
+                                        </Form.Control>
+                                    </Col>
+                                </Row>
                                 {
                                     this.state.startTimeError && 
                                     <Form.Control.Feedback style={{display:"block"}} type="invalid">
@@ -428,22 +443,23 @@ const mapStateToProps = (state:IAppState)=>({
 
 export default connect(mapStateToProps,{bookAcService})(BookingDetails);
 
+interface IExampleCustomInputProps{
+    onClick: any,
+    value: any
+}
 
-// class CustomInputDate extends React.Component {
-    
-//     render () {
-//       return (
-//         <button
-//           className="example-custom-input"
-//           onClick={this.props.onClick}>
-//           {this.props.value}
-//         </button>
-//       )
-//     }
-//   }
+class ExampleCustomInput extends React.Component<IExampleCustomInputProps> {
+
+    render () {
+      return (
+        <button
+          className="btn btn-primary example-custom-input"
+          onClick={this.props.onClick}>
+          {this.props.value}
+        </button>
+      )
+    }
+  }
   
-//   CustomInputDate.propTypes = {
-//     onClick: PropTypes.func,
-//     value: PropTypes.string
-//   };
+ 
   

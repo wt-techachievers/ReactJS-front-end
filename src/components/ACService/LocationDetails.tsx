@@ -2,11 +2,14 @@ import React, { Component } from 'react';
 import ReactMapGL, { Marker } from 'react-map-gl';
 import Geocoder from 'react-map-gl-geocoder';
 import MapGL from 'react-map-gl'
-import { Card, Row, Col, Button, Form } from 'react-bootstrap';
+import { Card, Row, Col, Button, Form, Table } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { IAppState } from 'store';
 import { updateLocationAcService } from 'action/acService';
 import { IACServiceState } from './BookingDetails';
+import {circle, inside, point} from '@turf/turf';
+import {IServiceProviderInfo} from '../../reducer/acService';
+import Rating from 'react-rating';
 
 declare global{
     interface Window{
@@ -14,6 +17,7 @@ declare global{
         MapboxGeocoder:any;
     }
 }
+
 
 class LocationDetails extends React.Component<any> {
     state = {
@@ -24,40 +28,51 @@ class LocationDetails extends React.Component<any> {
             longitude: 78.9629,
             zoom: 5
         },
-        searchResult:{},
-        address: ""
+        searchResult: {},
+        address: "",
+        bookingAreas: [],
+        searchResultError: false
     }
     
     mapRef = React.createRef<MapGL>()
     
     componentDidMount() {
+        let self = this;
+        window.mapboxgl.accessToken = 'pk.eyJ1IjoiY2hpbnRhbnNvbmkxIiwiYSI6ImNqdmMxOHh1MzFkeWk0NG15bWJlbDYwN2sifQ.MT1hxtqXFw4QAXZ8MyfzCQ';
+        var map = new window.mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v9',
+        center: [78.9629, 20.5937],
+        zoom: 4
+        });
         
-        // let self = this;
-        // window.mapboxgl.accessToken = 'pk.eyJ1IjoiY2hpbnRhbnNvbmkxIiwiYSI6ImNqdmMxOHh1MzFkeWk0NG15bWJlbDYwN2sifQ.MT1hxtqXFw4QAXZ8MyfzCQ';
-        // var map = new window.mapboxgl.Map({
-        // container: 'map',
-        // style: 'mapbox://styles/mapbox/streets-v9',
-        // center: [78.9629, 20.5937],
-        // zoom: 4
-        // });
-        
-        // var geocoder = new window.MapboxGeocoder({
-        // accessToken: window.mapboxgl.accessToken,
-        // types: 'poi',
-        // // see https://docs.mapbox.com/api/search/#geocoding-response-object for information about the schema of each response feature
-        // render: function(item:any) {
-        // // extract the item's maki icon or use a default
-        // var maki = item.properties.maki || 'marker';
-        // return "<div class='geocoder-dropdown-item'><img class='geocoder-dropdown-icon' src='https://unpkg.com/@mapbox/maki@6.1.0/icons/" + maki + "-15.svg'><span class='geocoder-dropdown-text'>" + item.text + "</span></div>";
-        // },
-        // mapboxgl: window.mapboxgl
-        // });
-        // map.addControl(geocoder);
+        var geocoder = new window.MapboxGeocoder({
+        accessToken: window.mapboxgl.accessToken,
+        types: 'poi',
+        // see https://docs.mapbox.com/api/search/#geocoding-response-object for information about the schema of each response feature
+        render: function(item:any) {
+        // extract the item's maki icon or use a default
+        var maki = item.properties.maki || 'marker';
+        return "<div class='geocoder-dropdown-item'><img class='geocoder-dropdown-icon' src='https://unpkg.com/@mapbox/maki@6.1.0/icons/" + maki + "-15.svg'><span class='geocoder-dropdown-text'>" + item.text + "</span></div>";
+        },
+        mapboxgl: window.mapboxgl
+        });
+        map.addControl(geocoder);
 
 
-        // geocoder.on('result', function(e:any) {
-        //     self.setState({searchResult:e.result});
-        // });
+        geocoder.on('result', function(e:any) {
+            self.setState({searchResult:e.result});
+            var options:any = {steps: 10, units: 'kilometers', properties: {foo: 'bar'}};
+            let filteredArea = self.props.acBookings.ServiceProviderInfo.filter((splocation:IServiceProviderInfo)=>{
+                var dcircle = circle(splocation.coordinates, 5, options);
+                let searchResults:any = self.state.searchResult;
+                return inside(point(searchResults.geometry.coordinates),dcircle);
+            });
+
+            self.setState({
+                bookingAreas: filteredArea
+            });
+        });
     }
 
     textHandler=(e:any)=>{
@@ -68,23 +83,35 @@ class LocationDetails extends React.Component<any> {
         let s_no:number = +this.props.location.pathname.split("/").slice(-1)[0];
         let bookings = this.props.acBookings.Bookings.map((booking:IACServiceState)=> {
             if(booking.s_no === s_no){
-                booking.location = this.state.viewport;
+                if(Object.entries(this.state.searchResult).length === 0 && this.state.searchResult.constructor === Object){
+                    booking.location = this.state.viewport;
+                }else{
+                    booking.location = this.state.searchResult;
+                }
                 booking.additionalAdd = this.state.address;
+                booking.bookingAreas = this.state.bookingAreas;
             }
             return booking;
         });
         this.props.updateLocationAcService(bookings);
     }
 
-    submit =()=>{
-        this.setLocation();
-        console.log(this.props);
-        this.props.history.push("/acservice");
+    submit = async()=>{
+        if(Object.entries(this.state.searchResult).length === 0 && this.state.searchResult.constructor === Object){
+            await this.setState({searchResultError: true});
+        }else{
+            await this.setState({searchResultError: false});
+        }
+        if(!this.state.searchResultError){
+            this.setLocation();
+            console.log(this.state.bookingAreas);
+            this.props.history.push("/");
+        }
     }
 
     previous =()=>{
         this.setLocation();
-        this.props.history.push("/acservice");
+        this.props.history.push("/acservice/0");
     }
 
     handleViewportChange = (viewport:any) => {
@@ -105,7 +132,7 @@ class LocationDetails extends React.Component<any> {
     render() {
         return (
             <div>
-                <Card >
+                {/* <Card >
                     <Card.Header>
                         <h4>Your Location</h4>
                     </Card.Header>
@@ -165,8 +192,8 @@ class LocationDetails extends React.Component<any> {
                         </Row>
                         
                     </Card.Body>
-                </Card>
-                {/* <Card >
+                </Card> */}
+                <Card >
                     <Card.Header>
                         <h4>Your Location</h4>
                     </Card.Header>
@@ -177,8 +204,18 @@ class LocationDetails extends React.Component<any> {
                             </Card.Body>
                         </Card>
                         <Card>
+                            <Card.Body>
+                                {
+                                    this.state.searchResultError && 
+                                    <Form.Control.Feedback style={{display:"block"}} type="invalid">
+                                        Please Search your nearby location.
+                                    </Form.Control.Feedback>
+                                }
+                            </Card.Body>
+                        </Card>
+                        <Card>
                             <Card.Header className="text-primary">
-                                <h3>Address</h3>
+                                <h3>Your Address</h3>
                             </Card.Header>
                             <Card.Body>
                                 <Form.Control 
@@ -188,6 +225,39 @@ class LocationDetails extends React.Component<any> {
                                 />        
                             </Card.Body>
                         </Card>
+                        <Card >
+                            <Card.Header>
+                                <h4>Area Service Provider Info</h4>
+                            </Card.Header>
+                            <Card.Body>
+                                <Table striped bordered hover className="text-align-center">
+                                    <thead>
+                                        <tr>
+                                        <th>#</th>
+                                        <th>Area Name</th>
+                                        <th>Rating</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {this.state.bookingAreas.length > 0 && this.state.bookingAreas.map((area:any,index)=>(
+                                            <tr key={index}>
+                                                <td>{index +1}</td>
+                                                <td>{area.area}</td>
+                                                <td><Rating
+                                                        initialRating={area.rating}
+                                                        readonly={true}
+                                                        emptySymbol="far fa-star"
+                                                        fullSymbol="fas fa-star"
+                                                        fractions={5}
+                                                        />
+                                                    <Form.Label>{"("+area.rating+")"}</Form.Label>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            </Card.Body>
+                        </Card>    
                         <Row>
                             <Col lg="2">
                                 <Form.Label>Price</Form.Label>
@@ -212,7 +282,7 @@ class LocationDetails extends React.Component<any> {
                         </Row>
                         
                     </Card.Body>
-                </Card> */}
+                </Card>
             </div>
         )
     }

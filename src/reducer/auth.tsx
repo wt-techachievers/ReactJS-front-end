@@ -3,7 +3,7 @@ import { IRegistrationState } from 'components/Registration';
 import { ADD_USER } from '../action/types';
 
 export interface IAuthState{
-  readonly Users:IRegistrationState[]
+    Users:IRegistrationState[]
 }
 
 const initialState:IAuthState = {

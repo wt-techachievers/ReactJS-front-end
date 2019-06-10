@@ -51,14 +51,28 @@ class LocationDetails extends React.Component<any> {
         types: 'poi',
         // see https://docs.mapbox.com/api/search/#geocoding-response-object for information about the schema of each response feature
         render: function(item:any) {
-        // extract the item's maki icon or use a default
-        var maki = item.properties.maki || 'marker';
-        return "<div class='geocoder-dropdown-item'><img class='geocoder-dropdown-icon' src='https://unpkg.com/@mapbox/maki@6.1.0/icons/" + maki + "-15.svg'><span class='geocoder-dropdown-text'>" + item.text + "</span></div>";
-        },
-        mapboxgl: window.mapboxgl
+            // extract the item's maki icon or use a default
+            var maki = item.properties.maki || 'marker';
+            return "<div class='geocoder-dropdown-item'><img class='geocoder-dropdown-icon' src='https://unpkg.com/@mapbox/maki@6.1.0/icons/" + maki + "-15.svg'><span class='geocoder-dropdown-text'>" + item.text + "</span></div>";
+            },
+            mapboxgl: window.mapboxgl
         });
+        // geocoder.setInput("Surat Railway Station");
         map.addControl(geocoder);
 
+        let s_no:number = +this.props.location.pathname.split("/").slice(-1)[0];
+        if(!isNaN(s_no)){
+            let bookings = this.props.acBookings.Bookings.filter((booking:IACServiceState)=> {
+                if(booking.s_no === s_no){
+                    return true;
+                }
+                return false;
+            });
+            if(!(Object.entries(bookings[0].location).length === 0 && bookings[0].location.constructor === Object)){
+                this.setState({address:bookings[0].additionalAdd});
+                geocoder.query(bookings[0].location.place_name);
+            }
+        }
 
         geocoder.on('result', function(e:any) {
             self.setState({searchResult:e.result});
@@ -104,7 +118,6 @@ class LocationDetails extends React.Component<any> {
         }
         if(!this.state.searchResultError){
             this.setLocation();
-            console.log(this.state.bookingAreas);
             this.props.history.push("/");
         }
     }
@@ -222,6 +235,7 @@ class LocationDetails extends React.Component<any> {
                                 name="address"
                                 onChange = {this.textHandler}
                                 as="textarea" rows="3"
+                                value={this.state.address}
                                 />        
                             </Card.Body>
                         </Card>

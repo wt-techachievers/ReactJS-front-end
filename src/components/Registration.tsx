@@ -63,7 +63,7 @@ class Registration extends React.Component<any,IRegistrationState> {
         if(!this.state.passwordError && !this.state.fullNameError && !this.state.emailError && !this.state.confirmPasswordError){
             console.log(this.props);
             this.props.addUser(this.state);
-            this.props.history.push('/acservice/'+this.state.u_id);
+            this.props.history.push('/acservice');
         }
     }
 

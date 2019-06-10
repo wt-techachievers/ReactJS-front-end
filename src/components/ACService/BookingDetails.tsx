@@ -3,7 +3,7 @@ import { Card, Button, Form, Row, Col } from 'react-bootstrap';
 import DatePicker from "react-datepicker";
 import { connect } from 'react-redux';
 import { IAppState } from 'store';
-import { bookAcService } from 'action/acService';
+import { bookAcService, updateLocationAcService } from 'action/acService';
 import PropTypes from 'prop-types';
 
 export interface IACServiceState{
@@ -31,16 +31,15 @@ export interface IACServiceState{
 }
 
 class BookingDetails extends React.Component<any,IACServiceState> {
-
     state={
         s_no: this.props.acBookings.Bookings.length,
-        user_id:+this.props.location.pathname.split("/").slice(-1)[0],
+        user_id:5,//+this.props.location.pathname.split("/").slice(-1)[0],
         serviceType: "",
-        iabTypeProblem:[],
+        iabTypeProblem:[] as string[],
         iabTypeNoACUnits: "1",
-        iabTypeBrand: [],
+        iabTypeBrand: [] as string[],
         buildingType: "",
-        startTime: "",
+        startTime: "14:00",
         startDate: new Date(),
         location: {},
         additionalAdd: "",
@@ -54,6 +53,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
         locationError: false,
         additionalAddError: false,
     }
+
 
     changeHandler = (e:any) => {
         if(!(e.target.name === "iabTypeNoACUnits" && (e.target.value != "" && +e.target.value <=0))){
@@ -77,7 +77,28 @@ class BookingDetails extends React.Component<any,IACServiceState> {
         }
     }
 
+    componentDidMount(){
+        const editAcServiceDetailSNo = +this.props.location.pathname.split("/").slice(-1)[0];
+        if(!isNaN(editAcServiceDetailSNo)){
+            let bookings = this.props.acBookings.Bookings.filter((booking:IACServiceState)=> {
+                if(booking.s_no === editAcServiceDetailSNo){
+                    return true;
+                }
+                return false;
+            });
+
+            this.setState({
+                ...this.state,
+                ...bookings[0]
+            });
+        }
+        this.setState({
+            user_id: this.props.Users.Users[0].u_id
+        });
+    }
+
     submit = async()=>{
+        const editAcServiceDetailSNo = +this.props.location.pathname.split("/").slice(-1)[0];
         if(this.state.serviceType === ""){
             await this.setState({serviceTypeError: true});
         }
@@ -110,8 +131,17 @@ class BookingDetails extends React.Component<any,IACServiceState> {
             await this.setState({startTimeError: false});
         }
         if(!this.state.buildingTypeError && !this.state.iabTypeBrandError && !this.state.iabTypeNoACUnitsError && !this.state.iabTypeProblemError && !this.state.serviceTypeError && !this.state.startTimeError){
-            this.props.bookAcService(this.state);
-            console.log(this.props);
+            if(isNaN(editAcServiceDetailSNo)){
+                this.props.bookAcService(this.state);
+            }else{
+                for (let index in this.props.acBookings.Bookings){
+                    if(this.props.acBookings.Bookings[index].s_no === this.state.s_no){
+                        this.props.acBookings.Bookings[index] = this.state;
+                        break;
+                    }
+                };
+                this.props.updateLocationAcService(this.props.acBookings.Bookings);
+            }
             this.props.history.push("/acservice/location/"+this.state.s_no);
         }
     }
@@ -130,6 +160,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                         </Card.Header>
                         <Card.Body>
                             <Form.Check 
+                                checked = {this.state.serviceType === "AC Cleaning" }
                                 type={"radio"}
                                 id={`acCleaningRadio`}
                                 name={'serviceType'}
@@ -138,6 +169,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 onChange={this.changeHandler}>
                             </Form.Check>
                             <Form.Check 
+                                checked = {this.state.serviceType === "AC Installation" }
                                 type={"radio"}
                                 name={'serviceType'}
                                 id={`acInstallationRadio`}
@@ -146,6 +178,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 onChange={this.changeHandler}>
                             </Form.Check>
                             <Form.Check 
+                                checked = {this.state.serviceType === "AC Repairing" }
                                 type={"radio"}
                                 name={'serviceType'}
                                 id={`acRepairRadio`}
@@ -169,6 +202,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                         <Form.Group>
                             <Form.Label><h5>Tell Us Your Problem</h5></Form.Label>
                             <Form.Check 
+                                checked = {this.state.iabTypeProblem.indexOf("AC is not cold") >=0 }
                                 type={"checkbox"}
                                 id={`problemCheckbox1`}
                                 name={'iabTypeProblem'}
@@ -176,7 +210,8 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 value={`AC is not cold`}
                                 onChange={(e:any)=>this.checkBoxHandler(e,"iabTypeProblem")}>
                             </Form.Check>
-                            <Form.Check 
+                            <Form.Check
+                                checked = {this.state.iabTypeProblem.indexOf("AC Smells foul") >=0 } 
                                 type={"checkbox"}
                                 name={'iabTypeProblem'}
                                 id={`problemCheckbox2`}
@@ -185,6 +220,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 onChange={(e:any)=>this.checkBoxHandler(e,"iabTypeProblem")}>
                             </Form.Check>
                             <Form.Check 
+                                checked = {this.state.iabTypeProblem.indexOf("Others") >=0 }
                                 type={"checkbox"}
                                 name={'iabTypeProblem'}
                                 id={`problemCheckbox3`}
@@ -221,6 +257,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <Col lg="2">
                                         <Form.Check 
                                             inline 
+                                            checked = {this.state.iabTypeBrand.indexOf("LG") >=0 }
                                             type={"checkbox"}
                                             id={`brandCheckbox1`}
                                             name={'iabTypeBrand'}
@@ -232,6 +269,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <Col>
                                         <Form.Check 
                                             inline 
+                                            checked = {this.state.iabTypeBrand.indexOf("Panasonic") >=0 }
                                             type={"checkbox"}
                                             name={'iabTypeBrand'}
                                             id={`brandCheckbox2`}
@@ -247,6 +285,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <Col lg="2">
                                         <Form.Check 
                                             inline 
+                                            checked = {this.state.iabTypeBrand.indexOf("Samsung") >=0 }
                                             type={"checkbox"}
                                             name={'iabTypeBrand'}
                                             id={`brandCheckbox3`}
@@ -258,6 +297,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <Col>
                                         <Form.Check 
                                             inline 
+                                            checked = {this.state.iabTypeBrand.indexOf("Sharp") >=0 }
                                             type={"checkbox"}
                                             id={`brandCheckbox4`}
                                             name={'iabTypeBrand'}
@@ -273,6 +313,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <Col lg="2">
                                         <Form.Check 
                                             inline 
+                                            checked = {this.state.iabTypeBrand.indexOf("Daikin") >=0 }
                                             type={"checkbox"}
                                             name={'iabTypeBrand'}
                                             id={`brandCheckbox5`}
@@ -284,6 +325,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <Col>
                                         <Form.Check 
                                             inline 
+                                            checked = {this.state.iabTypeBrand.indexOf("Others") >=0 }
                                             type={"checkbox"}
                                             name={'iabTypeBrand'}
                                             id={`brandCheckbox6`}
@@ -311,6 +353,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                             <Row>
                                 <Col lg="2">
                                     <Form.Check 
+                                        checked = {this.state.buildingType === "House" }
                                         type={"radio"}
                                         id={`houseRadio`}
                                         name={'buildingType'}
@@ -321,6 +364,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 </Col>
                                 <Col>
                                     <Form.Check 
+                                        checked = {this.state.buildingType === "Apartment (+Rp. 25,000)" }
                                         type={"radio"}
                                         id={`appartmentRadio`}
                                         name={'buildingType'}
@@ -333,6 +377,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                             <Row>
                                 <Col lg="2">
                                     <Form.Check 
+                                        checked = {this.state.buildingType === "Home Office (+Rp. 25,000)" }
                                         type={"radio"}
                                         id={`homeOfficeRadio`}
                                         name={'buildingType'}
@@ -343,6 +388,7 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                 </Col>
                                 <Col>
                                     <Form.Check 
+                                        checked = {this.state.buildingType === "Office Building (+Rp. 25,000)" }
                                         type={"radio"}
                                         id={`officeBuildingRadio`}
                                         name={'buildingType'}
@@ -392,20 +438,21 @@ class BookingDetails extends React.Component<any,IACServiceState> {
                                     <Col sm={2}>
                                         <Form.Control as="select"
                                             name="startTime"
-                                            onChange = {this.changeHandler}>
-                                            <option value="">---Select---</option>
-                                            <option>8:00</option>
-                                            <option>9:00</option>
-                                            <option>10:00</option>
-                                            <option>11:00</option>
-                                            <option>12:00</option>
-                                            <option>13:00</option>
-                                            <option>14:00</option>
-                                            <option>15:00</option>
-                                            <option>16:00</option>
-                                            <option>17:00</option>
-                                            <option>18:00</option>
-                                            <option>19:00</option>
+                                            onChange = {this.changeHandler}
+                                            value={this.state.startTime}>
+                                            <option  value="">---Select---</option>
+                                            <option >8:00</option>
+                                            <option >9:00</option>
+                                            <option >10:00</option>
+                                            <option >11:00</option>
+                                            <option >12:00</option>
+                                            <option >13:00</option>
+                                            <option >14:00</option>
+                                            <option >15:00</option>
+                                            <option >16:00</option>
+                                            <option >17:00</option>
+                                            <option >18:00</option>
+                                            <option >19:00</option>
                                         </Form.Control>
                                     </Col>
                                 </Row>
@@ -438,10 +485,11 @@ class BookingDetails extends React.Component<any,IACServiceState> {
 }
 
 const mapStateToProps = (state:IAppState)=>({
-        acBookings: state.serviceState
+        acBookings: state.serviceState,
+        Users: state.authState
 });
 
-export default connect(mapStateToProps,{bookAcService})(BookingDetails);
+export default connect(mapStateToProps,{bookAcService, updateLocationAcService})(BookingDetails);
 
 interface IExampleCustomInputProps{
     onClick: any,

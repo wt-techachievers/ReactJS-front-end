@@ -21,6 +21,7 @@ class App extends React.Component {
         <BrowserRouter>
           <Route exact path="/" component={ListBookings}></Route>
           <Route exact path="/registration" component={Registration}></Route>
+          <Route exact path="/acservice/" component={BookingDetails}></Route>
           <Route exact path="/acservice/:userid" component={BookingDetails}></Route>
           <Route path="/acservice/location" component={LocationDetails}></Route>
         </BrowserRouter>

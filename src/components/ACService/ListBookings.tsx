@@ -11,7 +11,8 @@ class ListBookings extends React.Component<any> {
 
     state={
         show:false,
-        selectedRow: undefined
+        selectedRow: undefined,
+        updateDetail: undefined
     }
 
 
@@ -20,18 +21,23 @@ class ListBookings extends React.Component<any> {
     }
 
     removeBookingHandler = () =>{
-        this.handleClose();
-        let bookings = this.props.acBookings.Bookings.filter((booking:IACServiceState)=> {
-            if(booking.s_no === this.state.selectedRow){
-                return false;
-            }
-            return true;
-        });
-        this.props.updateLocationAcService(bookings);
+        if(!this.state.updateDetail){
+            this.handleClose();
+            let bookings = this.props.acBookings.Bookings.filter((booking:IACServiceState)=> {
+                if(booking.s_no === this.state.selectedRow){
+                    return false;
+                }
+                return true;
+            });
+            this.props.updateLocationAcService(bookings);
+        }
+        else{
+            this.props.history.push("/acservice/"+this.state.selectedRow);
+        }
     }
 
-    handleShow =(e:any,s_no:number) => {
-        this.setState({ show: true, selectedRow: s_no });
+    handleShow =(e:any,s_no:number, update:boolean) => {
+        this.setState({ show: true, selectedRow: s_no, updateDetail:update });
 
     }
 
@@ -44,15 +50,16 @@ class ListBookings extends React.Component<any> {
                 <td >{booking.location.properties.address}</td>
                 <td >{booking.startDate.toDateString()}</td>
                 <td >{booking.startTime}</td>
-                <td ><Button>Update</Button><br/><Button onClick={(e:any)=>this.handleShow(e,booking.s_no)} variant="danger">Cancel Booking</Button></td>
+                <td ><Button onClick={(e:any)=>this.handleShow(e,booking.s_no,true)}>Update</Button><br/><Button onClick={(e:any)=>this.handleShow(e,booking.s_no,false)} variant="danger">Cancel Booking</Button></td>
             </tr>
         ));
+        let popUpText = this.state.updateDetail ? "update" : "delete";
         return (
             <div>
                 <Card >
                     <Card.Header>
                         <h4 style={{float:"left"}}>Your Bookings</h4> 
-                        <Link className="btn btn-primary" style={{width:"12%", float:"right"}} to="/acservice/0">+ More bookings</Link>
+                        <Link className="btn btn-primary" style={{width:"12%", float:"right"}} to="/acservice">+ More bookings</Link>
                     </Card.Header>
                     <Card.Body>
                     <Table striped bordered hover variant="dark" className="text-align-center">
@@ -77,7 +84,7 @@ class ListBookings extends React.Component<any> {
                     <Modal.Header closeButton>
                         <Modal.Title>Are you sure ?</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>You want to delete this booking!</Modal.Body>
+                    <Modal.Body>You want to {popUpText} this booking!</Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={this.handleClose}>
                         No
